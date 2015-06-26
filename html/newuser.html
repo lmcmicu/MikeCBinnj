@@ -1,0 +1,64 @@
+<script type="text/javascript" language="JavaScript">
+  function createNewUser(form) {
+    // check to see that no fields are empty:
+    if (form.uname.value == "" || form.passwd.value == "" ||
+        form.fname.value == "" || form.lname.value == "") {
+        alert("All fields must be filled.");
+        return;
+    }
+
+    // username must be exactly four "word" characters long
+    // (i.e. alphanumeric + underscore):
+    if (/^\w{4}$/.test(form.uname.value) == false) {
+        alert("invalid username");
+        return;
+    }
+
+    // password can be from 1 to 16 word characters long:
+    if (/^\w{1,16}$/.test(form.passwd.value) == false) {
+        alert("invalid password");
+        return;
+    }
+
+    // first and last names should be no more than 30 word characters long:
+    if (/^\w{1,30}$/.test(form.fname.value) == false) {
+        alert("invalid first name");
+        return;
+    }
+
+    if (/^\w{1,30}$/.test(form.lname.value) == false) {
+        alert("invalid last name");
+        return;
+    }
+
+    // if input ok, then validate credentials:
+    form.setAttribute("action", "cgi-bin/newuser.py");
+    form.submit();
+  }
+</script>
+
+<html>
+<head><title>Lunch Manager</title></head>
+<body>
+
+<h2>Welcome to the Lunch Manager</h2>
+
+<p>Already have an account? Click <a href="login.html">here</a>.
+
+<h3>Create a new user</h3>
+
+<form method="post">
+  <p>Username: <input type="text" name="uname"><br/>
+    (4 characters, only alphanumeric and underscore characters allowed)<br/>
+  <p>Password: <input type="password" name="passwd"><br/>
+    (1-16 characters, only alphanumeric and underscore characters allowed)<br/>
+  <p>First name: <input type="text" name="fname"><br/>
+    (max. 30 characters)
+  <p>Last name: <input type="text" name="lname"><br/>
+    (max. 30 characters)
+  <p><input type="button" value="Submit"
+            onClick="createNewUser(this.form)">
+</form>
+
+</body>
+</html>

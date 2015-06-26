@@ -1,0 +1,30 @@
+<script type="text/javascript" language="JavaScript">
+  function login_user(form) {
+    // validate input:
+    if (form.uname.value == "" || form.passwd.value == "") {
+        alert("Please enter both a username and a password.");
+    }
+    else {
+        // if input ok, go to credential validation:
+        form.setAttribute("action", "cgi-bin/login.py");
+        form.submit();
+    }
+  }
+</script>
+
+<html>
+<head><title>Lunch Manager</title></head>
+<body>
+<h2>Welcome to the Lunch Manager</h2>
+
+<p>New user? Click <a href="newuser.html">here</a>.
+
+<h3>Login</h3>
+<form method="post">
+  <p>Username: <input name="uname" type="text">
+  <p>Password: <input name="passwd" type="password">
+  <p><input type="button" value="Login" onClick="login_user(this.form)">
+</form>
+
+<body>
+</html>
