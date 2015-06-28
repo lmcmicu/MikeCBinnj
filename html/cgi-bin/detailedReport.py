@@ -111,34 +111,38 @@ else:
     # write html header
     lunchlib.write_head_uname(uname)
 
-    # connect to the database
-    db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
-               user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
+    try:
+        # connect to the database
+        db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
+                   user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
 
-    # report header
-    print "Report for user: <b>" + uname + "</b> for period: <b>" + \
-        start_month + " to " + end_month +"</b><br/><br/>"
+        # report header
+        print "Report for user: <b>" + uname + "</b> for period: <b>" + \
+            start_month + " to " + end_month +"</b><br/><br/>"
 
-    # form to go back to main menu
-    lunchlib.write_form('''
-         <p><input type="button" value="Back to Menu"
-             onClick="goToMainMenu(this.form)">
-         <p><input type="hidden" name="uname" value="''' + uname + '''">
-    ''')
+        # form to go back to main menu
+        lunchlib.write_form('''
+             <p><input type="button" value="Back to Menu"
+                 onClick="goToMainMenu(this.form)">
+             <p><input type="hidden" name="uname" value="''' + uname + '''">
+        ''')
 
-    # both reports will be part of a larger overall table:
-    print "<table><tr>"
-    print "<td>"
+        # both reports will be part of a larger overall table:
+        print "<table><tr>"
+        print "<td>"
 
-    # Only run summary report if there is data in the detailed report.
-    if write_detailed_report(uname, start_month, end_month, db):
-        print '</td><td width="60"></td><td>'
-        write_summary_report(uname, start_month, end_month, db)
+        # Only run summary report if there is data in the detailed report.
+        if write_detailed_report(uname, start_month, end_month, db):
+            print '</td><td width="60"></td><td>'
+            write_summary_report(uname, start_month, end_month, db)
 
-    print "</td></tr></table>"
+        print "</td></tr></table>"
 
-    # html footer
-    lunchlib.write_tail()
+        # html footer
+        lunchlib.write_tail()
 
-    # close database connection:
-    db.close()
+        # close database connection:
+        db.close()
+
+    except pg.InternalError:
+        lunchlib.write_fail("Could not connect to database")

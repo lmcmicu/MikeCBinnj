@@ -27,31 +27,34 @@ else:
     fname = arguments["fname"].value
     lname = arguments["lname"].value
 
-    # connect to the database:
-    db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
-               user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
+    try:
+        # connect to the database:
+        db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
+                   user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
 
-    # check if username already exists
-    rows = db.query('''
-                    select 1
-                    from employee
-                    where uname='{0}'
-                    '''.format(uname)).getresult()
-    if rows:
-        lunchlib.write_fail("A user with that username already exists!")
-    else:
-        # encrypt the password:
-        hashedpw = hashpw(plainpw, gensalt())
-
-        # store new record for user into the employee table
-        updValues = {'uname':uname, 'passwd':hashedpw, 'fname':fname,
-                     'lname':lname}
-        if db.insert("employee", updValues) == None:
-            lunchlib.write_fail("Problem inserting new user to database")
+        # check if username already exists
+        rows = db.query('''
+                        select 1
+                        from employee
+                        where uname='{0}'
+                        '''.format(uname)).getresult()
+        if rows:
+            lunchlib.write_fail("A user with that username already exists!")
         else:
-            lunchlib.write_succeed("User created successfully!")
+            # encrypt the password:
+            hashedpw = hashpw(plainpw, gensalt())
+
+            # store new record for user into the employee table
+            updValues = {'uname':uname, 'passwd':hashedpw, 'fname':fname,
+                         'lname':lname}
+            if db.insert("employee", updValues) == None:
+                lunchlib.write_fail("Problem inserting new user to database")
+            else:
+                lunchlib.write_succeed("User created successfully!")
 
 
-    # close the database connection:
-    db.close()
+        # close the database connection:
+        db.close()
 
+    except pg.InternalError:
+        lunchlib.write_fail("Could not connect to database")

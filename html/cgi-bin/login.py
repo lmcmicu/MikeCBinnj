@@ -24,44 +24,47 @@ else:
     uname = arguments["uname"].value
     passwd = arguments["passwd"].value
 
-    # connect to the database:
-    db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
-               user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
+    try:
+        # connect to the database:
+        db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
+                   user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
 
-    # check if the user exists and if so, retrieve her password:
-    rows = db.query('''
-                    select passwd
-                    from employee
-                    where uname='{0}'
-                    '''.format(uname)).getresult()
-    if not rows or not rows[0]:
-        lunchlib.write_fail("No such user")
-    else:
-        # password should be in the first and only field of the
-        # first and only row:
-        retrievedpw = rows[0][0]
-
-        # verify that supplied password is the same as the retrieved one:
-        if not hashpw(passwd, retrievedpw) == retrievedpw:
-            # if not, write out some html informing of a mismatch:
-            lunchlib.write_fail("Incorrect password")
+        # check if the user exists and if so, retrieve her password:
+        rows = db.query('''
+                        select passwd
+                        from employee
+                        where uname='{0}'
+                        '''.format(uname)).getresult()
+        if not rows or not rows[0]:
+            lunchlib.write_fail("No such user")
         else:
-            # otherwise write out some html informing of a success
-            lunchlib.write_js('''
-                function goToMainMenu(form) {
-                        // proceed to main menu when button is pressed:
-                        form.setAttribute("action", "menu.py");
-                        form.submit();
-                }
-            ''')
-            lunchlib.write_head_uname(uname)
+            # password should be in the first and only field of the
+            # first and only row:
+            retrievedpw = rows[0][0]
 
-            lunchlib.write_form('''
-                <p><input type="button" value="OK" onClick="goToMainMenu(this.form)">
-                <p><input type="hidden" name="uname" value="''' + uname + '''">
-            ''')
+            # verify that supplied password is the same as the retrieved one:
+            if not hashpw(passwd, retrievedpw) == retrievedpw:
+                # if not, write out some html informing of a mismatch:
+                lunchlib.write_fail("Incorrect password")
+            else:
+                # otherwise write out some html informing of a success
+                lunchlib.write_js('''
+                    function goToMainMenu(form) {
+                            // proceed to main menu when button is pressed:
+                            form.setAttribute("action", "menu.py");
+                            form.submit();
+                    }
+                ''')
+                lunchlib.write_head_uname(uname)
 
-            lunchlib.write_tail()
+                lunchlib.write_form('''
+                    <p><input type="button" value="OK" onClick="goToMainMenu(this.form)">
+                    <p><input type="hidden" name="uname" value="''' + uname + '''">
+                ''')
 
-    # close database connection:
-    db.close()
+                lunchlib.write_tail()
+
+        # close database connection:
+        db.close()
+    except pg.InternalError:
+        lunchlib.write_fail("Could not connect to database")

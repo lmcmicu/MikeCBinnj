@@ -26,75 +26,79 @@ else:
     # html that will eventually be written to the page:
     status_message = ""
 
-    # connect to the database:
-    db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
-               user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
+    try:
+        # connect to the database:
+        db = pg.DB(dbname=lunchlib.dbname, host=lunchlib.dbhost,
+                   user=lunchlib.dbuser, passwd=lunchlib.dbpasswd)
 
-    # retrieve the id corresponding to this username:
-    rows = db.query('''
-                    select id
-                    from employee
-                    where uname='{0}'
-                   '''.format(uname)).getresult()
-
-    if not rows or not rows[0]:
-        lunchlib.write_fail("No such user")
-    else:
-        emp_id = rows[0][0]
-
-        # check to see if an entry for this user on the date requested
-        # already exists:
+        # retrieve the id corresponding to this username:
         rows = db.query('''
-                        select 1
-                        from lunch_expenses
-                        where emp_id='{0}'
-                              and lunch_date='{1}'
-                        '''.format(emp_id,ldate)).getresult()
+                        select id
+                        from employee
+                        where uname='{0}'
+                       '''.format(uname)).getresult()
 
-        # if it does, then delete it first:
-        if rows:
-            updValues = {'emp_id':emp_id, 'lunch_date':ldate}
-            if db.delete("lunch_expenses", updValues) == 0:
-                status_message = status_message + \
-                                 "problem deleting exising row in database"
-            else:
-                status_message = status_message + "Previous entry for " + \
-                                 ldate + " overwritten.<br/>"
-        # end of if rows block
-
-        # now insert the new entry to the database:
-        updValues = {'emp_id':emp_id, 'lunch_date':ldate, 'amount':amount}
-
-        if db.insert("lunch_expenses", updValues) == None:
-            status_message = status_message + \
-                             "Problem inserting row to database"
+        if not rows or not rows[0]:
+            lunchlib.write_fail("No such user")
         else:
-            status_message = status_message + "New entry for " + \
-                             ldate + " inserted successfully!"
+            emp_id = rows[0][0]
 
-        # write out the html page:
-        lunchlib.write_js('''
-            function goToMainMenu(form) {
-                // go back to main menu:
-                form.setAttribute("action", "menu.py");
-                form.submit();
-            }
-        ''')
+            # check to see if an entry for this user on the date requested
+            # already exists:
+            rows = db.query('''
+                            select 1
+                            from lunch_expenses
+                            where emp_id='{0}'
+                                  and lunch_date='{1}'
+                            '''.format(emp_id,ldate)).getresult()
 
-        # html header
-        lunchlib.write_head_uname(uname);
+            # if it does, then delete it first:
+            if rows:
+                updValues = {'emp_id':emp_id, 'lunch_date':ldate}
+                if db.delete("lunch_expenses", updValues) == 0:
+                    status_message = status_message + \
+                                     "problem deleting exising row in database"
+                else:
+                    status_message = status_message + "Previous entry for " + \
+                                     ldate + " overwritten.<br/>"
+            # end of if rows block
 
-        # information message
-        print status_message
+            # now insert the new entry to the database:
+            updValues = {'emp_id':emp_id, 'lunch_date':ldate, 'amount':amount}
 
-        # form to go back to main menu
-        lunchlib.write_form('''
-            <p><input type="button" value="OK" onClick="goToMainMenu(this.form)">
-            <p><input type="hidden" name="uname" value="''' + uname + '''">
-        ''');
+            if db.insert("lunch_expenses", updValues) == None:
+                status_message = status_message + \
+                                 "Problem inserting row to database"
+            else:
+                status_message = status_message + "New entry for " + \
+                                 ldate + " inserted successfully!"
 
-        # html footer
-        lunchlib.write_tail();
+            # write out the html page:
+            lunchlib.write_js('''
+                function goToMainMenu(form) {
+                    // go back to main menu:
+                    form.setAttribute("action", "menu.py");
+                    form.submit();
+                }
+            ''')
 
-    # close db connection
-    db.close()
+            # html header
+            lunchlib.write_head_uname(uname);
+
+            # information message
+            print status_message
+
+            # form to go back to main menu
+            lunchlib.write_form('''
+                <p><input type="button" value="OK" onClick="goToMainMenu(this.form)">
+                <p><input type="hidden" name="uname" value="''' + uname + '''">
+            ''');
+
+            # html footer
+            lunchlib.write_tail();
+
+        # close db connection
+        db.close()
+
+    except pg.InternalError:
+        lunchlib.write_fail("Could not connect to database")
